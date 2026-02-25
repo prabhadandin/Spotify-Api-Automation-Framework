@@ -1,5 +1,4 @@
  Spotify API Automation & Testing Framework 
-
 API testing suite designed for the **Spotify Web API**.
 This framework demonstrates industry-standard automation practices, including dynamic variable passing, secure environment management, and tiered-access validation.
 
@@ -29,7 +28,10 @@ Test Scenarios
 - GET Profile: Validates account access and captures the dynamic `user_id`.
 - POST Create Playlist: Validates successful creation (201 Created) and confirms the response metadata matches the request payload.
 - Dynamic Persistence: passing data (IDs) between disparate API requests.
-
+- Resilience & Negative Testing (Shift-Left Approach)identifying potential
+ failures early in the development lifecycle—this suite includes intentional negative test cases:
+ Invalid PlaylistID: Validates that the system gracefully handles malformed
+ or non-existent IDs by confirming a `404 Not Found` status and verifying the presence of a descriptive error message.
  Project Summary
 This project was developed to maintain and showcase technical proficiency 
 in **API Lifecycle Management** and **Automated Quality Assurance**. 
