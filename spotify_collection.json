@@ -1,0 +1,321 @@
+{
+  "info": {
+    "_postman_id": "3207eeb0-b794-4bd9-85d0-093b1eebe5d5",
+    "name": "Spotify Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "8229785"
+  },
+  "item": [
+    {
+      "name": "Get User id",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const userProfile = pm.response.json();\r",
+              "//save user id to environment\r",
+              "pm.environment.set(\"user_id\", userProfile.id);\r",
+              "pm.test(\"Status code is 200 - Profile Retrieved\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseurl}}/me",
+          "host": [
+            "{{baseurl}}"
+          ],
+          "path": [
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Playlist",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "\r",
+              "const playlistDetails=pm.response.json();\r",
+              "pm.test(\"Status code is 201 - Playlist Created\", function () {\r",
+              "pm.response.to.have.status(201);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Playlist data is validResponse contains valid Playlist ID and Name\", function () {\r",
+              "pm.expect(playlistDetails.id).to.exist; \r",
+              "try{\r",
+              "    // Check if the created name matches\r",
+              "const requestedBody = JSON.parse(pm.request.body.raw);\r",
+              "const expectedName = requestedBody.name || \"New Playlist\";\r",
+              "pm.expect(playlistDetails.name).to.eql(expectedName);\r",
+              "}   \r",
+              "   catch (e) {\r",
+              "        console.warn(\"Could not parse request body for name validation\");\r",
+              "    }\r",
+              "});\r",
+              "//  Save the Playlist ID to Environment\r",
+              "if (playlistDetails.id) {\r",
+              "pm.environment.set(\"playlist_id\", playlistDetails.id);\r",
+              "console.log(\" Playlist ID saved: \" + playlistDetails.id);\r",
+              "}\r",
+              "\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Automation Testing Playlist\",\r\n     \"description\": \"Created via Postman Regression Suite\",\r\n     \"public\": false\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseurl}}/users/{{user_id}}/playlists",
+          "host": [
+            "{{baseurl}}"
+          ],
+          "path": [
+            "users",
+            "{{user_id}}",
+            "playlists"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search a track",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const trackdetails = pm.response.json();\r",
+              "pm.test(\"Status code is 200 - Search Successful\", function () {\r",
+              "pm.response.to.have.status(200);\r",
+              "});\r",
+              "pm.test(\"Search returned tracks\", function () {\r",
+              "pm.expect(trackdetails.tracks.items.length).to.be.greaterThan(0);\r",
+              "});\r",
+              "const firstTrack = trackdetails.tracks.items[0];\r",
+              "if (firstTrack) {\r",
+              "//save track_uri to save in playlist\r",
+              "pm.environment.set(\"track_uri\", firstTrack.uri);\r",
+              "console.log(\"Saved Track Name: \" + firstTrack.name);\r",
+              "console.log(\"Saved Track URI: \" + firstTrack.uri);\r",
+              "} else {\r",
+              "console.error(\"No tracks found in search results.\");\r",
+              "}\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseurl}}/search?q=remaster&type=track",
+          "host": [
+            "{{baseurl}}"
+          ],
+          "path": [
+            "search"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "remaster"
+            },
+            {
+              "key": "type",
+              "value": "track"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Add track to playlist",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const jsonData = pm.response.json();\r",
+              "pm.test(\"Status code is 201 - Track Added\", function () {    \r",
+              "pm.expect(pm.response.code).to.be.oneOf([201, 200]);\r",
+              "});\r",
+              "pm.test(\"Playlist updated successfully\", function () {\r",
+              "pm.expect(jsonData.snapshot_id).to.exist;\r",
+              "console.log(\"Track added! New Playlist Snapshot: \" + jsonData.snapshot_id);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n\"uris\": [\"{{track_uri}}\"]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseurl}}/playlists/{{playlist_id}}/tracks",
+          "host": [
+            "{{baseurl}}"
+          ],
+          "path": [
+            "playlists",
+            "{{playlist_id}}",
+            "tracks"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Invalid PlaylistId",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 404 Not Found\", function () {\r",
+              "    pm.response.to.have.status(404);\r",
+              "});\r",
+              "pm.test(\"Error message is descriptive\", function () {\r",
+              "const jsonData = pm.response.json();\r",
+              "pm.expect(jsonData.error.message).to.be.a('string');\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"uris\": [\"{{track_uri}}\"]}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseurl}}/playlists/invalid_id_123/tracks",
+          "host": [
+            "{{baseurl}}"
+          ],
+          "path": [
+            "playlists",
+            "invalid_id_123",
+            "tracks"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "oauth2",
+    "oauth2": [
+      {
+        "key": "scope",
+        "value": "user-read-private user-read-email playlist-modify-public playlist-modify-private",
+        "type": "string"
+      },
+      {
+        "key": "clientSecret",
+        "value": "{{client_secret}}",
+        "type": "string"
+      },
+      {
+        "key": "clientId",
+        "value": "{{client_id}}",
+        "type": "string"
+      },
+      {
+        "key": "accessTokenUrl",
+        "value": "https://accounts.spotify.com/api/token",
+        "type": "string"
+      },
+      {
+        "key": "authUrl",
+        "value": "https://accounts.spotify.com/authorize",
+        "type": "string"
+      },
+      {
+        "key": "addTokenTo",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}
