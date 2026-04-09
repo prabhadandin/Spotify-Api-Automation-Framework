@@ -1,0 +1,22 @@
+name: API Tests
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install Newman
+      run: npm install -g newman
+
+    - name: Run Postman Collection
+      run: |
+        newman run SpotifyCollection.json \
+        -e environment.json \
+        -r cli,html
