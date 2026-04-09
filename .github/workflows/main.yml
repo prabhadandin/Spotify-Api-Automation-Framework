@@ -18,5 +18,5 @@ jobs:
     - name: Run Postman Collection
       run: |
         newman run spotify_collection.json \
-        -e spotifyEnv.json \
+        -e spotify_env.json \
         -r cli,html
